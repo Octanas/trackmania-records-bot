@@ -114,27 +114,33 @@ module.exports = {
 			let response_sent = false;
 
 			for (const times_map of times) {
-				times_map.times.sort((player1, player2) => {
-					if (player1.time === -1)
-						return 1;
+				let msg = `**${times_map.map_name}**`;
 
-					if (player2.time === -1) {
-						return -1
+				if (times_map.times.every(t => t.time === -1)) {
+					msg += ` - No set times`;
+				} else {
+					msg += '\n';
+
+					times_map.times.sort((player1, player2) => {
+						if (player1.time === -1)
+							return 1;
+
+						if (player2.time === -1) {
+							return -1
+						}
+
+						return player1.time - player2.time;
+					});
+
+					for (const [index, times_map_player] of times_map.times.entries()) {
+						if (times_map_player.time === -1) {
+							msg += `${get_medal(0)} <@${times_map_player.player_discord_id}>: N/A\n`;
+						}
+						else {
+							msg += `${get_medal(index + 1)} <@${times_map_player.player_discord_id}>: ${millisecondsToTime(times_map_player.time)}\n`;
+						}
+
 					}
-
-					return player1.time - player2.time;
-				});
-
-				let msg = `**${times_map.map_name}**\n`;
-
-				for (const [index, times_map_player] of times_map.times.entries()) {
-					if (times_map_player.time === -1) {
-						msg += `${get_medal(0)} <@${times_map_player.player_discord_id}>: N/A\n`;
-					}
-					else {
-						msg += `${get_medal(index + 1)} <@${times_map_player.player_discord_id}>: ${millisecondsToTime(times_map_player.time)}\n`;
-					}
-
 				}
 
 				if (fullMsg.length + `${msg}`.length >= 2000) {
