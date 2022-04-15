@@ -1,5 +1,4 @@
 const https = require('https');
-const { tm_username, tm_password } = require('./config.json');
 
 function parseJwt(token) {
     var base64Url = token.split('.')[1];
@@ -91,7 +90,7 @@ module.exports = {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                auth: `${tm_username}:${tm_password}`
+                auth: `${process.env.TM_USERNAME}:${process.env.TM_PASSWORD}`
             };
 
             console.log('Authenticating...');

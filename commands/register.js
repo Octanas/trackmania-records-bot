@@ -1,8 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { readFile, writeFile, mkdir } = require('fs/promises');
 const { dirname } = require('path');
-const { registered_users_file } = require('../config.json');
-
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -19,13 +17,13 @@ module.exports = {
 			let json_data = [];
 
 			try {
-				const json_data_string = await readFile(registered_users_file);
+				const json_data_string = await readFile(process.env.REGISTERED_USERS_FILE);
 
 				json_data = JSON.parse(json_data_string);
 			} catch (error) {
 				if (error.code === 'ENOENT') {
-					console.log(`${registered_users_file} does not exist, will be created.`);
-					await mkdir(dirname(registered_users_file), { recursive: true });
+					console.log(`${process.env.REGISTERED_USERS_FILE} does not exist, will be created.`);
+					await mkdir(dirname(process.env.REGISTERED_USERS_FILE), { recursive: true });
 				}
 				else
 					throw error;
@@ -55,7 +53,7 @@ module.exports = {
 
 			const new_json_data = JSON.stringify(json_data);
 
-			await writeFile(registered_users_file, new_json_data);
+			await writeFile(process.env.REGISTERED_USERS_FILE, new_json_data);
 
 			await interaction.reply({ content: 'User successfully registered.', ephemeral: true });
 			console.log('User successfully registered.')

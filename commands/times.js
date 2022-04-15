@@ -2,7 +2,6 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 const { readFile } = require('fs/promises');
 const { get_medal, millisecondsToTime } = require('../utils');
 const { get_times, get_season_info, get_maps_info } = require('../tm-endpoints');
-const { current_season_id, registered_users_file } = require('../config.json');
 
 let maps = []
 
@@ -13,7 +12,7 @@ module.exports = {
 	async execute(interaction) {
 		try {
 			if (maps.length === 0) {
-				const season_info = await get_season_info(current_season_id);
+				const season_info = await get_season_info(process.env.CURRENT_SEASON_ID);
 
 				if (season_info === null) {
 
@@ -54,7 +53,7 @@ module.exports = {
 			let registered_users_json_data = [];
 
 			try {
-				const json_data_string = await readFile(registered_users_file);
+				const json_data_string = await readFile(process.env.REGISTERED_USERS_FILE);
 
 				registered_users_json_data = JSON.parse(json_data_string);
 			} catch (error) {
@@ -79,7 +78,7 @@ module.exports = {
 
 			const players_tm_ids = players.map(obj => obj.trackmania_id);
 
-			const json_times_content = await get_times(current_season_id, players_tm_ids);
+			const json_times_content = await get_times(process.env.CURRENT_SEASON_ID, players_tm_ids);
 
 			const times = maps.map(obj => {
 				return {
