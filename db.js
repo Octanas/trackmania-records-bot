@@ -23,10 +23,11 @@ module.exports = {
             await database.client.query(query_server);
 
             const query_player = 'CREATE TABLE IF NOT EXISTS "player" (' +
-                '"discord_id" BIGINT PRIMARY KEY, ' +
+                '"discord_id" BIGINT NOT NULL, ' +
                 '"trackmania_id" TEXT NOT NULL, ' +
-                '"server_id" BIGINT NOT NULL REFERENCES "server"("discord_id")' +
-                ');';
+                '"server_id" BIGINT NOT NULL REFERENCES "server"("discord_id"), ' +
+                'CONSTRAINT "pk_player" PRIMARY KEY ("discord_id", "server_id")' +
+                '); ';
 
             await database.client.query(query_player);
 
