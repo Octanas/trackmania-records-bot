@@ -1,6 +1,7 @@
 const fs = require('fs');
 const { Client, Collection, Intents } = require('discord.js');
 const { authenticate } = require('./tm-endpoints');
+const { initialize_db, close_db } = require('./db');
 
 require('dotenv').config();
 
@@ -19,10 +20,12 @@ for (const file of commandFiles) {
 
 client.once('ready', async () => {
     try {
+        await initialize_db();
         await authenticate();
         console.log('Ready!');
     } catch (error) {
         console.log(`Could not initiate bot: ${error}`);
+        await close_db();
         client.destroy();
     }
 });

@@ -1,7 +1,7 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { readFile } = require('fs/promises');
 const { get_medal, millisecondsToTime } = require('../utils');
 const { get_times, get_season_info, get_maps_info } = require('../tm-endpoints');
+const { database } = require('../db');
 
 let maps = []
 
@@ -50,31 +50,27 @@ module.exports = {
 				});
 			}
 
-			let registered_users_json_data = [];
+			const dbClient = database.client;
 
-			try {
-				const json_data_string = await readFile(process.env.REGISTERED_USERS_FILE);
-
-				registered_users_json_data = JSON.parse(json_data_string);
-			} catch (error) {
-				if (error.code === 'ENOENT') {
-					console.log('Could not retrieve times, no registered users.');
-					await interaction.reply('Could not retrieve times, no registered users.');
-					return;
-				}
-				else
-					throw error;
+			if (dbClient === null) {
+				throw new Error(`Database connection not established.`);
 			}
 
-			const registered_users_server_object = registered_users_json_data.find(element => element.server === interaction.guildId);
+			const get_players_query = {
+				text: 'SELECT discord_id, trackmania_id FROM player ' +
+					'WHERE server_id = $1',
+				values: [interaction.guildId]
+			};
 
-			if (registered_users_server_object === undefined || registered_users_server_object.users.length === 0) {
-				console.log('Could not retrieve times, no registered users.');
+			const get_players_result = await dbClient.query(get_players_query);
+
+			if (get_players_result.rowCount == 0) {
+				console.log(`Could not retrieve times, no registered users in server with id ${interaction.guildId}.`);
 				await interaction.reply('Could not retrieve times, no registered users.');
 				return;
 			}
 
-			const players = registered_users_server_object.users;
+			const players = get_players_result.rows;
 
 			const players_tm_ids = players.map(obj => obj.trackmania_id);
 

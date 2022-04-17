@@ -1,6 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
-const { readFile, writeFile, mkdir } = require('fs/promises');
-const { dirname } = require('path');
+const { database } = require('../db');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -14,51 +13,48 @@ module.exports = {
 		),
 	async execute(interaction) {
 		try {
-			let json_data = [];
+			const dbClient = database.client;
 
-			try {
-				const json_data_string = await readFile(process.env.REGISTERED_USERS_FILE);
-
-				json_data = JSON.parse(json_data_string);
-			} catch (error) {
-				if (error.code === 'ENOENT') {
-					console.log(`${process.env.REGISTERED_USERS_FILE} does not exist, will be created.`);
-					await mkdir(dirname(process.env.REGISTERED_USERS_FILE), { recursive: true });
-				}
-				else
-					throw error;
+			if (dbClient === null) {
+				throw new Error(`Database connection not established.`);
 			}
 
-			const server_object = json_data.find(element => element.server === interaction.guildId);
+			const add_server_query = {
+				text: 'INSERT INTO server (discord_id) VALUES ($1) ON CONFLICT DO NOTHING',
+				values: [interaction.guildId]
+			};
+
+			const add_server_result = await dbClient.query(add_server_query);
+
+			if (add_server_result.rowCount === 1) {
+				console.log(`Added new server (id ${interaction.guildId}).`);
+			}
 
 			const trackmania_id = interaction.options.getString('tm_id');
 
-			const user_obj = {
-				discord_id: interaction.user.id,
-				trackmania_id: trackmania_id
+			const add_player_query = {
+				text: 'INSERT INTO player (discord_id, trackmania_id, server_id) ' +
+					'VALUES ($1, $2, $3) ' +
+					'ON CONFLICT (discord_id) DO UPDATE SET trackmania_id = EXCLUDED.trackmania_id ' +
+					'RETURNING xmax:: text:: int > 0 AS updated;',
+				values: [interaction.user.id, trackmania_id, interaction.guildId]
 			};
 
-			if (server_object === undefined)
-				json_data.push({ server: interaction.guildId, users: [user_obj] })
-			else {
-				if (server_object.users.find(obj => obj.discord_id === interaction.user.id) === undefined)
-					server_object.users.push(user_obj);
-				else {
-					console.log(`User already registered.`);
-					await interaction.reply({ content: 'User already registered.', ephemeral: true });
-					return;
+			const add_player_result = await dbClient.query(add_player_query);
+
+			if (add_player_result.rowCount === 1) {
+				if (add_player_result.rows[0].updated) {
+					console.log(`User registration updated (id ${interaction.user.id}).`);
+					await interaction.reply({ content: 'User registration updated.', ephemeral: true });
+				} else {
+					console.log(`User successfully registered (id ${interaction.user.id}).`)
+					await interaction.reply({ content: 'User successfully registered.', ephemeral: true });
 				}
+			} else {
+				throw new Error(`No rows were affected on the database 'player' table`);
 			}
-
-
-			const new_json_data = JSON.stringify(json_data);
-
-			await writeFile(process.env.REGISTERED_USERS_FILE, new_json_data);
-
-			await interaction.reply({ content: 'User successfully registered.', ephemeral: true });
-			console.log('User successfully registered.')
 		} catch (error) {
-			console.log(`Error registering user: ${error}`);
+			console.log(`Error registering user (id ${interaction.user.id}): ${error}`);
 			await interaction.reply({ content: 'Error: could not register user.', ephemeral: true });
 			return;
 		}

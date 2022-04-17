@@ -11,7 +11,7 @@ GUILD_ID=<development-discord-server-id>
 TM_USERNAME=<trackmania-username>
 TM_PASSWORD=<trackmania-password>
 CURRENT_SEASON_ID=<trackmania-season-id>
-REGISTERED_USERS_FILE=data/registered_users.json
+DATABASE_URL=<database-connection-string>
 ```
 
 #### TODO: rest of README
