@@ -84,7 +84,8 @@ module.exports = {
 						return {
 							player_discord_id: player.discord_id,
 							player_trackmania_id: player.trackmania_id,
-							time: -1
+							time: -1,
+							url: null
 						};
 					})
 				};
@@ -102,6 +103,7 @@ module.exports = {
 					continue;
 
 				times_map_player.time = time_content.recordScore.time;
+				times_map_player.url = time_content.url;
 			}
 
 			let fullMsg = '';
@@ -132,7 +134,7 @@ module.exports = {
 							msg += `${get_medal(0)} <@${times_map_player.player_discord_id}>: N/A\n`;
 						}
 						else {
-							msg += `${get_medal(index + 1)} <@${times_map_player.player_discord_id}>: ${millisecondsToTime(times_map_player.time)}\n`;
+							msg += `${get_medal(index + 1)} <@${times_map_player.player_discord_id}>: ${millisecondsToTime(times_map_player.time)} ([replay](${times_map_player.url}))\n`;
 						}
 
 					}
