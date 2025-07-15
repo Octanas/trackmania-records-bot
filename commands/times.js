@@ -73,13 +73,16 @@ module.exports = {
 			const players = get_players_result.rows;
 
 			const players_tm_ids = players.map(obj => obj.trackmania_id);
-
-			const json_times_content = await get_times(process.env.CURRENT_SEASON_ID, players_tm_ids);
-
-			const times = maps.map(obj => {
-				return {
-					map_id: obj.id,
-					map_name: obj.name,
+			
+			let times = [];
+			
+			for (const map of maps)
+			{
+				const json_times_content = await get_times(map.id, players_tm_ids);
+				
+				let time_obj = {
+					map_id: map.id,
+					map_name: map.name,
 					times: players.map(player => {
 						return {
 							player_discord_id: player.discord_id,
@@ -89,21 +92,18 @@ module.exports = {
 						};
 					})
 				};
-			});
+				
+				for (const time_content of json_times_content) {
+					const times_map_player = time_obj.times.find(elem => elem.player_trackmania_id === time_content.accountId);
+					
+					if (times_map_player === undefined)
+						continue;
+					
+					times_map_player.time = time_content.recordScore.time;
+					times_map_player.url = time_content.url;
+				}
 
-			for (const time_content of json_times_content) {
-				const times_map = times.find(elem => elem.map_id === time_content.mapId);
-
-				if (times_map === undefined)
-					continue;
-
-				const times_map_player = times_map.times.find(elem => elem.player_trackmania_id === time_content.accountId);
-
-				if (times_map_player === undefined)
-					continue;
-
-				times_map_player.time = time_content.recordScore.time;
-				times_map_player.url = time_content.url;
+				times.push(time_obj);
 			}
 
 			let fullMsg = '';

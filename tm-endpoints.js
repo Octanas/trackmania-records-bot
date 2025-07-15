@@ -121,6 +121,8 @@ module.exports = {
                 }
             });
 
+            req.write(`{ "audience": "NadeoServices" }`);
+
             req.on('error', error => {
                 reject(error);
             });
@@ -128,7 +130,7 @@ module.exports = {
             req.end();
         });
     },
-    async get_times(season_id, account_ids) {
+    async get_times(map_id, account_ids) {
         return new Promise(async (resolve, reject) => {
             if (!await check_expiration()) {
                 reject('Error refreshing auth token');
@@ -137,7 +139,7 @@ module.exports = {
 
             const options = {
                 hostname: 'prod.trackmania.core.nadeo.online',
-                path: `/mapRecords/?accountIdList=${account_ids.join()}&seasonId=${season_id}`,
+                path: `/v2/mapRecords/?accountIdList=${account_ids.join()}&mapId=${map_id}`,
                 method: 'GET',
                 headers: {
                     'Authorization': `nadeo_v1 t=${access_token}`
