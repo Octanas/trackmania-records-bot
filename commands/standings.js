@@ -153,10 +153,10 @@ module.exports = {
 			for (const [index, player] of player_standings.entries()) {
 				let msg = '';
 
-				msg += `**${index + 1}º - <@${player.discord_id}>**\n`;
-				msg += `${get_medal(1)} ${player.first_places}\n`;
-				msg += `${get_medal(2)} ${player.second_places}\n`;
-				msg += `${get_medal(3)} ${player.third_places}\n`;
+				msg += `**${index + 1}º - <@${player.discord_id}>**: `;
+				msg += `${get_medal(1)} x${player.first_places} `;
+				msg += `${get_medal(2)} x${player.second_places} `;
+				msg += `${get_medal(3)} x${player.third_places}`;
 
 				if (fullMsg.length + `${msg}`.length >= 2000) {
 					if (response_sent)
