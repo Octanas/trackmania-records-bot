@@ -111,12 +111,10 @@ module.exports = {
 			let response_sent = false;
 
 			for (const times_map of times) {
-				let msg = `**${times_map.map_name}**`;
+				let msg = '';
 
-				if (times_map.times.every(t => t.time === -1)) {
-					msg += ` - No set times`;
-				} else {
-					msg += '\n';
+				if (!times_map.times.every(t => t.time === -1)) {
+					msg += `**${times_map.map_name}**\n`;
 
 					times_map.times.sort((player1, player2) => {
 						if (player1.time === -1)
@@ -130,10 +128,7 @@ module.exports = {
 					});
 
 					for (const [index, times_map_player] of times_map.times.entries()) {
-						if (times_map_player.time === -1) {
-							msg += `${get_medal(0)} <@${times_map_player.player_discord_id}>: N/A\n`;
-						}
-						else {
+						if (times_map_player.time !== -1) {
 							msg += `${get_medal(index + 1)} <@${times_map_player.player_discord_id}>: ${millisecondsToTime(times_map_player.time)} ([replay](${times_map_player.url}))\n`;
 						}
 
@@ -156,7 +151,8 @@ module.exports = {
 					response_sent = true;
 				}
 
-				fullMsg += `${msg}\n`;
+				if (msg.length > 0)
+					fullMsg += `${msg}\n`;
 			}
 
 			if (response_sent)
