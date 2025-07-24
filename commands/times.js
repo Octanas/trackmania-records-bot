@@ -8,7 +8,7 @@ let maps = []
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('times')
-		.setDescription('Show all times of current season.'),
+		.setDescription('Show times of the first 10 maps of the current season.'),
 	async execute(interaction) {
 		try {
 			if (maps.length === 0) {
@@ -76,8 +76,15 @@ module.exports = {
 			
 			let times = [];
 			
+			let map_number = 1;
+
 			for (const map of maps)
 			{
+				if (map_number >= 11)
+				{
+					break;
+				}
+
 				const json_times_content = await get_times(map.id, players_tm_ids);
 				
 				let time_obj = {
@@ -104,6 +111,8 @@ module.exports = {
 				}
 
 				times.push(time_obj);
+
+				map_number++;
 			}
 
 			let fullMsg = '';
